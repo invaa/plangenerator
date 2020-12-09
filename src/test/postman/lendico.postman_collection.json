@@ -1,0 +1,106 @@
+{
+	"id": "8090af5c-4067-14a5-c67b-d079ee7a0a27",
+	"name": "lendico",
+	"description": "",
+	"order": [
+		"0b5a4edd-936f-da06-7261-35bb044122ac",
+		"acf49b7f-05ae-c363-cbca-d352bc56afe4",
+		"40ec0dc4-75e8-6c63-abcd-0d6f4e50f5e3"
+	],
+	"folders": [],
+	"folders_order": [],
+	"timestamp": 1607456864704,
+	"owner": 0,
+	"public": false,
+	"requests": [
+		{
+			"id": "0b5a4edd-936f-da06-7261-35bb044122ac",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "http://localhost:8080/actuator/health",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "GET",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1607530764035,
+			"name": "Health",
+			"description": "",
+			"collectionId": "8090af5c-4067-14a5-c67b-d079ee7a0a27",
+			"responses": [],
+			"rawModeData": "{\n \"loanAmount\": \"5000\",\n \"nominalRate\": \"5.0\",\n \"duration\": 24,\n \"startDate\": \"2018-01-01T00:00:01Z\"\n}"
+		},
+		{
+			"id": "40ec0dc4-75e8-6c63-abcd-0d6f4e50f5e3",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "http://localhost:8080/v2/api-docs",
+			"queryParams": [],
+			"pathVariables": {},
+			"pathVariableData": [],
+			"preRequestScript": null,
+			"method": "GET",
+			"collectionId": "8090af5c-4067-14a5-c67b-d079ee7a0a27",
+			"data": [],
+			"dataMode": "raw",
+			"name": "Swagger2 json",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1607530795001,
+			"version": 2,
+			"responses": [],
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"rawModeData": "{\n \"loanAmount\": \"5000\",\n \"nominalRate\": \"5.0\",\n \"duration\": 24,\n \"startDate\": \"2018-01-01T00:00:01Z\"\n}"
+		},
+		{
+			"id": "acf49b7f-05ae-c363-cbca-d352bc56afe4",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "http://localhost:8080/generate-plan",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1607465905430,
+			"name": "Generate plan",
+			"description": "",
+			"collectionId": "8090af5c-4067-14a5-c67b-d079ee7a0a27",
+			"responses": [],
+			"rawModeData": "{\n \"loanAmount\": \"50000\",\n \"nominalRate\": \"5.0\",\n \"duration\": 24,\n \"startDate\": \"2018-01-01T00:00:01Z\"\n}"
+		}
+	]
+}
