@@ -20,7 +20,7 @@ Limitations:
 ## How to run the backend
 
 ### 1. With Docker (Recommended)
-Prerequisites: installed docker, internet, system proxy is set up if needed, allowed outbound connections to redis-278a75ee-zamkovyi-f976.aivencloud.com:26890
+Prerequisites: installed docker, internet
 
 ```
 docker run -p 8080:8080 -t invaa/plangenerator:latest
