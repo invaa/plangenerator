@@ -1,0 +1,10 @@
+{
+  "simulation": "com.lendico.plangenerator.PlanGeneratorLoadTest",
+  "simulationId": "plangeneratorloadtest",
+  "start": 1607554459746,
+  "description": "",
+  "scenarios": ["PlanGeneratorLoadTest"],
+  "assertions": [
+
+  ]
+}

@@ -4,10 +4,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CalendarService {
-    public int daysInMonth() {
+    int daysInMonth() {
         return 30;
     }
-    public int getDaysInYear() {
+    int getDaysInYear() {
         return 360;
     }
 }

@@ -23,6 +23,8 @@
         <jasypt-boot.version>2.0.0</jasypt-boot.version>
         <docker.image.prefix>invaa</docker.image.prefix>
         <swagger2.version>2.9.2</swagger2.version>
+        <gatling.version>3.0.2</gatling.version>
+        <scala-maven-plugin.version>3.4.4</scala-maven-plugin.version>
         <guava.version>26.0-jre</guava.version>
         <commons-lang3.version>3.7</commons-lang3.version>
     </properties>
@@ -36,6 +38,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
             <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -118,6 +126,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>io.gatling</groupId>
+                <artifactId>gatling-maven-plugin</artifactId>
+                <version>${gatling.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>

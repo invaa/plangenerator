@@ -19,10 +19,11 @@ import java.util.List;
 
 @Service
 public class PlanGenerationService {
-    private static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
-    private static final int MONTH_IN_A_YEAR = 12;
+    private static final BigDecimal BIG_DECIMAL_ONE_HUNDRED = new BigDecimal(100);
+    private static final int MONTHS_IN_A_YEAR = 12;
     private final ApplicationConfig config;
     private final CalendarService calendarService;
+    private final MathContext mathContext;
 
     @Autowired
     public PlanGenerationService(
@@ -31,28 +32,15 @@ public class PlanGenerationService {
     ) {
         this.config = config;
         this.calendarService = calendarService;
+        this.mathContext = new MathContext(config.getDivisionPrecision(), RoundingMode.HALF_UP);
     }
 
     public RepaymentPlan generate(final GenerationParameters parameters) {
-        final MathContext mathContext = new MathContext(config.getDivisionPrecision(), RoundingMode.HALF_UP);
-
-        final BigDecimal monthlyInterestRate = parameters
-                .getNominalRate()
-                .divide(ONE_HUNDRED, mathContext)
-                .divide(new BigDecimal(MONTH_IN_A_YEAR), mathContext);
-
-        BigDecimal annuity = getAnnuity(parameters, mathContext, monthlyInterestRate);
-
+        final BigDecimal monthlyInterestRate = getMonthlyInterestRate(parameters.getNominalRate());
+        BigDecimal annuity = getAnnuity(parameters, monthlyInterestRate);
         BigDecimal currentOutstandingPrincipal = parameters.getLoanAmount()
                 .setScale(config.getResultRounding(), RoundingMode.HALF_UP);
-
-        BigDecimal currentInterest =
-                parameters.getNominalRate()
-                        .divide(ONE_HUNDRED, mathContext)
-                        .multiply(new BigDecimal(calendarService.daysInMonth()))
-                        .multiply(currentOutstandingPrincipal)
-                        .divide(new BigDecimal(calendarService.getDaysInYear()), mathContext)
-                        .setScale(config.getResultRounding(), RoundingMode.HALF_UP);
+        BigDecimal currentInterest = getCurrentInterest(parameters, currentOutstandingPrincipal);
 
         if (currentInterest.compareTo(annuity) >= 0) {
             throw new InvalidPlanParametersException("Annuity is greater than monthly interest, plan can't be generated.");
@@ -61,14 +49,13 @@ public class PlanGenerationService {
         BigDecimal currentPrincipal = annuity.subtract(currentInterest);
         int currentMonth = parameters.getStartDate().getMonthValue();
         int currentYear = parameters.getStartDate().getYear();
-
         List<BorrowerPayment> borrowerPayments = new ArrayList<>();
 
         for (int i = 0; i < parameters.getDuration(); i++) {
-            BigDecimal remainingOutstandingPrincipal = currentOutstandingPrincipal
-                    .subtract(currentPrincipal
-                            .compareTo(currentOutstandingPrincipal) > 0 ? currentOutstandingPrincipal : currentPrincipal);
-            if (i == parameters.getDuration() - 1) {
+            BigDecimal remainingOutstandingPrincipal = getRemainingOutstandingPrincipal(currentOutstandingPrincipal, currentPrincipal);
+            final boolean isLastIteration = i == parameters.getDuration() - 1;
+
+            if (isLastIteration) {
                 if (remainingOutstandingPrincipal.compareTo(BigDecimal.ZERO) > 0) {
                     currentPrincipal = remainingOutstandingPrincipal.add(currentPrincipal);
                     remainingOutstandingPrincipal = BigDecimal.ZERO;
@@ -85,16 +72,17 @@ public class PlanGenerationService {
                 }
             }
 
-            final BorrowerPayment currentBorrowerPayment = new BorrowerPayment(
-                    annuity,
-                    LocalDateTime.of(currentYear, currentMonth, 1, 0, 0, 0),
-                    currentOutstandingPrincipal,
-                    currentInterest,
-                    currentPrincipal,
-                    remainingOutstandingPrincipal
+            borrowerPayments.add(
+                    buildBorrowerPayment(
+                            annuity,
+                            currentOutstandingPrincipal,
+                            currentInterest,
+                            currentPrincipal,
+                            currentMonth,
+                            currentYear,
+                            remainingOutstandingPrincipal
+                    )
             );
-
-            borrowerPayments.add(currentBorrowerPayment);
 
             if (currentMonth == 12) {
                 currentYear++;
@@ -103,26 +91,72 @@ public class PlanGenerationService {
                 currentMonth++;
             }
 
-            //TODO: refactor
             currentOutstandingPrincipal = remainingOutstandingPrincipal;
-            currentInterest =
-                    parameters.getNominalRate()
-                            .divide(ONE_HUNDRED, mathContext)
-                            .multiply(new BigDecimal(calendarService.daysInMonth()))
-                            .multiply(currentOutstandingPrincipal)
-                            .divide(new BigDecimal(calendarService.getDaysInYear()), mathContext)
-                            .setScale(config.getResultRounding(), RoundingMode.HALF_UP);
+            currentInterest = getCurrentInterest(parameters, currentOutstandingPrincipal);
             currentPrincipal = annuity.subtract(currentInterest);
         }
         return new RepaymentPlan(borrowerPayments);
     }
 
     @Cacheable("annuities")
-    public BigDecimal getAnnuity(final GenerationParameters parameters, final MathContext mathContext, final BigDecimal monthlyInterestRate) {
+    public BigDecimal getAnnuity(
+            final GenerationParameters parameters,
+            final BigDecimal monthlyInterestRate
+    ) {
         return parameters
                 .getLoanAmount()
                 .multiply(monthlyInterestRate)
-                .divide(BigDecimal.ONE.subtract(BigDecimal.ONE.add(monthlyInterestRate).pow(-1 * parameters.getDuration(), mathContext)), mathContext)
+                .divide(BigDecimal.ONE
+                        .subtract(BigDecimal.ONE
+                                .add(monthlyInterestRate).pow(-1 * parameters.getDuration(), mathContext)
+                        ), mathContext
+                )
+                .setScale(config.getResultRounding(), RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getMonthlyInterestRate(final BigDecimal nominalRate) {
+        return nominalRate
+                .divide(BIG_DECIMAL_ONE_HUNDRED, mathContext)
+                .divide(new BigDecimal(MONTHS_IN_A_YEAR), mathContext);
+    }
+
+    private BigDecimal getRemainingOutstandingPrincipal(
+            final BigDecimal currentOutstandingPrincipal,
+            final BigDecimal currentPrincipal
+    ) {
+        return currentOutstandingPrincipal
+                .subtract(currentPrincipal
+                        .compareTo(currentOutstandingPrincipal) > 0 ? currentOutstandingPrincipal : currentPrincipal);
+    }
+
+    private BorrowerPayment buildBorrowerPayment(
+            final BigDecimal annuity,
+            final BigDecimal currentOutstandingPrincipal,
+            final BigDecimal currentInterest,
+            final BigDecimal currentPrincipal,
+            final int currentMonth,
+            final int currentYear,
+            final BigDecimal remainingOutstandingPrincipal
+    ) {
+        return new BorrowerPayment(
+                annuity,
+                LocalDateTime.of(currentYear, currentMonth, 1, 0, 0, 0),
+                currentOutstandingPrincipal,
+                currentInterest,
+                currentPrincipal,
+                remainingOutstandingPrincipal
+        );
+    }
+
+    private BigDecimal getCurrentInterest(
+            final GenerationParameters parameters,
+            final BigDecimal currentOutstandingPrincipal
+    ) {
+        return parameters.getNominalRate()
+                .divide(BIG_DECIMAL_ONE_HUNDRED, mathContext)
+                .multiply(new BigDecimal(calendarService.daysInMonth()))
+                .multiply(currentOutstandingPrincipal)
+                .divide(new BigDecimal(calendarService.getDaysInYear()), mathContext)
                 .setScale(config.getResultRounding(), RoundingMode.HALF_UP);
     }
 }

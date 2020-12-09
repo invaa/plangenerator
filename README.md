@@ -1,8 +1,8 @@
 # Repayment plan generator for loans
 
 Backend micro-service is configured for Docker containerisation and can be scaled with container management system.
-Results are cached for better performance.
-Code is automatically validated against common style rules using checkstyles.
+Results are cached for better performance (currently, cache is not distributed).
+Code is automatically validated against common style rules using checkstyles plugin.
 In order to support encrypted properties the service is integrated with jasypt library (for details see Jasypt section below).
 
 Out of scope:
@@ -16,6 +16,9 @@ Limitations:
 - startDate should be provided, there is no validation if it's in the past or future
 - nominalRate is between 0 and 100
 - duration is between 1 month and 100 years
+
+Test coverage:
+- 91% classes, 93% lines
 
 ## How to run the backend
 
@@ -35,6 +38,13 @@ git clone https://github.com/invaa/plangenerator.git
 cd plangenerator
 ./mvnw --settings=settings.xml clean install
 ./mvnw --settings=settings.xml spring-boot:run -Djasypt.encryptor.password=password
+```
+
+## Configuration
+There are 2 plan generation properties that can be configured in application.properties or application.yaml 
+``` 
+plan.generator.division.precision (the non-negative precision for floating point calculations, default value = 8)
+plan.generator.result.rounding (result fraction, default value = 2)
 ```
 
 ## Jasypt library
@@ -59,9 +69,20 @@ http://localhost:8080/v2/api-docs
 ```
 
 ## Examples
-
 You can find the example calls in the collection below.
 Install postman an import collection from project path
 ```
 ./src/test/postman/lendico.postman_collection.json
+```
+
+## Load test results
+Demo run result is available here (random loan plan requests with different rates from 1.0 to 6.0, 1000 users over 2 mins, 1 service instance):
+```
+./docs/plangeneratorloadtest
+```
+
+First run application on port 8080 or change the port in the test PlanGeneratorLoadTest.scala
+Then execute the load test:
+``` 
+./mvnw --settings=settings.xml gatling:test
 ```

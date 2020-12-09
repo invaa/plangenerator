@@ -4,6 +4,7 @@ import com.lendico.api.config.TestConfig;
 import com.lendico.api.dto.BorrowerPayment;
 import com.lendico.api.dto.GenerationParameters;
 import com.lendico.api.dto.RepaymentPlan;
+import com.lendico.api.exception.InvalidPlanParametersException;
 import com.lendico.api.service.PlanGenerationService;
 import org.junit.After;
 import org.junit.Before;
@@ -125,6 +126,28 @@ public class PlanGenerationControllerIT {
         // when then
         mockMvc.perform(post("/generate-plan")
                 .content(convertToJsonString(parameters))
+                .contentType(APPLICATION_JSON)
+                .accept(APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+
+    @Test
+    public void shouldThrowBadRequestWhenInvalidPlanParametersException() throws Exception {
+        // given
+        final GenerationParameters parameters = new GenerationParameters(
+                new BigDecimal("5000"),
+                new BigDecimal("5.0"),
+                1200,
+                LocalDateTime.of(2018,1,1,0,0,1)
+        );
+
+        when(planGenerationServiceMock.generate(parameters)).thenThrow(new InvalidPlanParametersException("Message"));
+
+        // when then
+        mockMvc.perform(post("/generate-plan")
+                .content("{ \"loanAmount\": \"5000\",\n" + " \"nominalRate\": \"5.0\",\n" + " \"duration\": 1200,\n" + " \"startDate\": \"2018-01-01T00:00:01Z\" }")
                 .contentType(APPLICATION_JSON)
                 .accept(APPLICATION_JSON))
                 .andExpect(status().isBadRequest())

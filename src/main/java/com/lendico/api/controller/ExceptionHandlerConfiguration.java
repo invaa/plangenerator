@@ -9,13 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.validation.ConstraintViolationException;
-import java.net.BindException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -23,39 +19,9 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 public class ExceptionHandlerConfiguration extends ResponseEntityExceptionHandler {
 
-    private void logDebugIfEnabled(final Exception exception) {
-        if (log.isDebugEnabled()) {
-            log.debug(exception.getMessage(), exception);
-        }
-    }
-
     private ResponseEntity<Error> handleException(final Exception exception, final HttpStatus status) {
         Error response = new Error(LocalDateTime.now(), status.value(), exception.getMessage());
         return new ResponseEntity<>(response, status);
-    }
-
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Error> handleTypeMismatchExceptionException(final MethodArgumentTypeMismatchException exception) {
-        logDebugIfEnabled(exception);
-        return handleException(exception, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Error> handleConstraintViolationException(final ConstraintViolationException exception) {
-        logDebugIfEnabled(exception);
-        return handleException(exception, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(BindException.class)
-    public ResponseEntity<Error> handleBindException(final BindException exception) {
-        logDebugIfEnabled(exception);
-        return handleException(exception, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(WebExchangeBindException.class)
-    public ResponseEntity<Error> handleWebExchangeBindException(final WebExchangeBindException exception) {
-        logDebugIfEnabled(exception);
-        return handleException(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
