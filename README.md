@@ -11,11 +11,12 @@ Out of scope:
 Tech stack: Java 11, spring-boot, Docker
 
 Limitations:
-- interest can't be greater than annuity (the borrower would never be able to pay the loan) and therefore one would get an exception
-- min loan amount > 0, max load amount <= 1 mln
-- startDate should be provided, there is no validation if it's in the past or future
-- nominalRate is between 0 and 100
-- duration is between 1 month and 100 years
+- montlyh interest amount to pay can't be greater than annuity (the borrower would never be able to pay the loan) 
+  and therefore one would get an exception
+- min loan amount should be greater than 0, max loan amount should not be greater than 1 mln
+- startDate should be provided, but there is no validation if it's in the past or future
+- nominalRate should be between 0 and 100
+- duration should be between 1 month and 100 years
 
 Test coverage:
 - 91% classes, 93% lines
