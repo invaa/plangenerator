@@ -40,6 +40,13 @@ cd plangenerator
 ./mvnw --settings=settings.xml spring-boot:run -Djasypt.encryptor.password=password
 ```
 
+### 3. Running as cluster
+There is an option to run multiple instances of the service with docker compose. 
+Here is an expample of running 3 instances loadbalances as roundrobing by nginx:
+```
+docker-compose up --scale plangenerator=3
+```
+
 ## Configuration
 There are 2 plan generation properties that can be configured in application.properties or application.yaml 
 ``` 
@@ -81,6 +88,7 @@ Demo run result is available here (random loan plan requests with different rate
 ./docs/plangeneratorloadtest
 ```
 
+For getting better throughput it's recommended to run application in cluster mode (See run option 3.).
 First run application on port 8080 or change the port in the test PlanGeneratorLoadTest.scala
 Then execute the load test:
 ``` 
