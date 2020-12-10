@@ -43,7 +43,7 @@ cd plangenerator
 
 ### 3. Running as cluster
 There is an option to run multiple instances of the service with docker compose. 
-Here is an expample of running 3 instances loadbalances as roundrobing by nginx:
+Here is an expample of running 3 instances loadbalances as roundrobin by nginx:
 ```
 docker-compose up --scale plangenerator=3
 ```
